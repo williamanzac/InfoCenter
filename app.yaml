@@ -1,0 +1,16 @@
+google:
+  clientId: 64512447492-amuv3cpi2g8nnvgu38jp3jodi5b6njag.apps.googleusercontent.com
+  clientSecret: nld4ouixko6p3BW1P5jRJ-QS
+  httpClient:
+    connectionTimeout: 5000ms
+    timeout: 10000ms
+
+database:
+  url: jdbc:h2:./target/app
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+
+  properties:
+    hibernate.hbm2ddl.auto: update #create #
+    hibernate.dialect: org.hibernate.dialect.H2Dialect
