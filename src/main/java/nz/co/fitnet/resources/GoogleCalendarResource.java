@@ -5,6 +5,8 @@ import io.dropwizard.hibernate.UnitOfWork;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -19,13 +21,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import nz.co.fitnet.api.AccountToken;
-import nz.co.fitnet.api.Calendar;
-import nz.co.fitnet.api.CalendarList;
-import nz.co.fitnet.api.CalendarListEntry;
-import nz.co.fitnet.api.Events;
+import nz.co.fitnet.api.Event;
 import nz.co.fitnet.core.GoogleCalendarService;
-import nz.co.fitnet.core.GoogleCalendarServiceException;
+import nz.co.fitnet.core.ServiceException;
+import nz.co.fitnet.core.model.Calendar;
+import nz.co.fitnet.core.model.CalendarList;
+import nz.co.fitnet.core.model.CalendarListEntry;
+import nz.co.fitnet.core.model.Events;
+import nz.co.fitnet.jdbi.AccountToken;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -92,7 +95,7 @@ public class GoogleCalendarResource {
 	@GET
 	@UnitOfWork
 	@Path("/list/{tokenId}")
-	public Response getCalendarList(final @PathParam("tokenId") long tokenId) throws GoogleCalendarServiceException {
+	public Response getCalendarList(final @PathParam("tokenId") long tokenId) throws ServiceException {
 		final CalendarList calendarList = service.getCalendarList(tokenId);
 		return Response.ok(calendarList).build();
 	}
@@ -101,7 +104,7 @@ public class GoogleCalendarResource {
 	@UnitOfWork
 	@Path("/list/{tokenId}/{calendarId}")
 	public Response getCalendarListEntry(final @PathParam("tokenId") long tokenId,
-			final @PathParam("calendarId") String calendarId) throws GoogleCalendarServiceException {
+			final @PathParam("calendarId") String calendarId) throws ServiceException {
 		final CalendarListEntry calendarList = service.getCalendarListEntry(tokenId, calendarId);
 		return Response.ok(calendarList).build();
 	}
@@ -110,7 +113,7 @@ public class GoogleCalendarResource {
 	@UnitOfWork
 	@Path("/{tokenId}/{calendarId}")
 	public Response getCalendar(final @PathParam("tokenId") long tokenId,
-			final @PathParam("calendarId") String calendarId) throws GoogleCalendarServiceException {
+			final @PathParam("calendarId") String calendarId) throws ServiceException {
 		final Calendar calendarList = service.getCalendar(tokenId, calendarId);
 		return Response.ok(calendarList).build();
 	}
@@ -118,9 +121,33 @@ public class GoogleCalendarResource {
 	@GET
 	@UnitOfWork
 	@Path("/{tokenId}/{calendarId}/events")
-	public Response getEvents(final @PathParam("tokenId") long tokenId, final @PathParam("calendarId") String calendarId)
-			throws GoogleCalendarServiceException {
-		final Events events = service.getEvents(tokenId, calendarId);
-		return Response.ok(events).build();
+	public Response getEvents(final @PathParam("tokenId") long tokenId,
+			final @PathParam("calendarId") String calendarId, final @QueryParam("start") String start,
+			final @QueryParam("end") String end) throws ServiceException {
+		final Events events = service.getEvents(tokenId, calendarId, start, end);
+		final List<Event> eventList = new ArrayList<>();
+		if (events.getItems() != null) {
+			events.getItems().forEach(e -> {
+				final Event event = new Event();
+				if (e.getEnd() != null) {
+					if (e.getEnd().getDate() != null) {
+						event.setEnd(new Date(e.getEnd().getDate().getValue()));
+					} else {
+						event.setEnd(new Date(e.getEnd().getDateTime().getValue()));
+					}
+				}
+				event.setId(e.getId());
+				if (e.getStart() != null) {
+					if (e.getStart().getDate() != null) {
+						event.setStart(new Date(e.getStart().getDate().getValue()));
+					} else {
+						event.setStart(new Date(e.getStart().getDateTime().getValue()));
+					}
+				}
+				event.setTitle(e.getSummary());
+				eventList.add(event);
+			});
+		}
+		return Response.ok(eventList).build();
 	}
 }

@@ -7,27 +7,190 @@
 		
 		<title>Info Center</title>
 		
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.9/css/weather-icons-wind.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.9/css/weather-icons.min.css">
 
-		<link rel="stylesheet" href="/css/main.css" />
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/css/main.css">
 	</head>
 	<body>
-		<div data-bind="text: $root.calendar.startDate()"></div>
-		<div data-bind="text: $root.calendar.today()"></div>
-		<div data-bind="text: $root.calendar.endDate()"></div>
-		<div data-bind="text: $root.test"></div>
-		<div data-bind="text: test"></div>
-		<div data-bind="text: $root.test()"></div>
-		<div data-bind="text: test()"></div>
+		<div class="container-fluid">
+			<div class="row">
+				<!-- ko template: {name: 'calendarTemplate', data: $root.chchWeather} -->
+				<!-- /ko -->
+				<!-- ko template: {name: 'calendarTemplate', data: $root.amberleyWeather} -->
+				<!-- /ko -->
+				<div class="panel panel-default col-sm-4">
+					<div class="panel-body">
+						<h3>Tasks</h3>
+						<table class="table">
+							<thead>
+								<tr>
+									<th style="width: 5%">
+										<input type="checkbox" disabled="disabled" />
+									</th>
+									<th style="width: 90%">Task Name</th>
+									<th style="width: 5%">&nbsp;</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="checkbox" />
+									</td>
+									<td>&nbsp;</td>
+									<td>
+										<a class="btn btn-default">
+											<i class="fa fa-times" aria-hidden="true"></i>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div data-bind="fullCalendar: $root.calendarMonthView" class="col-sm-8"></div>
+				<div data-bind="fullCalendar: $root.calendarDayView" class="col-sm-4"></div>
+			</div>
+		</div>
+
+		<script type="text/html" id="calendarTemplate">
+				<div class="panel panel-default col-sm-4">
+					<div class="panel-body">
+						<div class="row" data-bind="with: $data.current">
+							<div class="pull-right" data-bind="foreach: $data.weather">
+								<!-- ko if: $data.icon.includes('n') -->
+								<i class="wi fa-5x" data-bind="css: 'wi-owm-night-' + $data.id"></i>
+								<!-- /ko -->
+								<!-- ko if: $data.icon.includes('d') -->
+								<i class="wi fa-5x" data-bind="css: 'wi-owm-day-' + $data.id"></i>
+								<!-- /ko -->
+								<!-- ko if: !$data.icon.includes('n') && !$data.icon.includes('d') -->
+								<i class="wi fa-5x" data-bind="css: 'wi-owm-' + $data.id"></i>
+								<!-- /ko -->
+							</div>
+							<h2>
+								<!-- ko text: $data.main.temp -->
+								<!-- /ko -->
+								<sup>o</sup>
+								<!-- ko text: $data.name -->
+								<!-- /ko -->
+							</h2>
+						</div>
+						<div class="row" data-bind="with: $data.dailyForecast">
+							<table class="table">
+								<thead>
+									<tr data-bind="foreach: $data.list">
+										<th data-bind="text: moment($data.dt * 1000).format('ddd')">Mon</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr data-bind="foreach: $data.list">
+										<td data-bind="foreach: $data.weather">
+											<i class="wi fa-2x" data-bind="css: 'wi-owm-' + $data.id"></i>
+										</td>
+									</tr>
+									<tr data-bind="foreach: $data.list">
+										<td data-bind="text: $data.temp.min">10</td>
+									</tr>
+									<tr data-bind="foreach: $data.list">
+										<td data-bind="text: $data.temp.max">10</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="row" data-bind="with: $data.hourlyForecast">
+							<table class="table">
+								<thead>
+									<tr data-bind="foreach: $data.list">
+										<th data-bind="text: moment($data.dt * 1000).hours()">10</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr data-bind="foreach: $data.list">
+										<td data-bind="foreach: $data.weather">
+											<i class="wi fa-2x" data-bind="css: 'wi-owm-' + $data.id"></i>
+										</td>
+									</tr>
+									<tr data-bind="foreach: $data.list">
+										<td data-bind="text: $data.main.temp">10</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+		</script>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
-		<script src="/js/knockout.calendar.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.0.1/fullcalendar.min.js"></script>
+		<script src="/js/knockout.fullcalendar.js"></script>
+		<script src="/js/knockout.weather.js"></script>
 		<script src="/js/main.js"></script>
 	</body>
 </html>

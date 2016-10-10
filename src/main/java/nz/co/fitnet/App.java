@@ -7,11 +7,14 @@ import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import nz.co.fitnet.api.AccountToken;
 import nz.co.fitnet.core.GoogleCalendarService;
 import nz.co.fitnet.core.GoogleConfig;
+import nz.co.fitnet.core.OWMWeatherService;
+import nz.co.fitnet.core.WeatherConfig;
+import nz.co.fitnet.jdbi.AccountToken;
 import nz.co.fitnet.jdbi.AccountTokenDAO;
 import nz.co.fitnet.resources.GoogleCalendarResource;
+import nz.co.fitnet.resources.WeatherResource;
 
 import org.apache.http.client.HttpClient;
 import org.hibernate.SessionFactory;
@@ -43,6 +46,7 @@ public class App extends Application<AppConfig> {
 		final SessionFactory sessionFactory = hibernate.getSessionFactory();
 
 		final GoogleConfig googleConfig = configuration.getGoogle();
+		WeatherConfig weatherConfig = configuration.getWeather();
 
 		final HttpClient googleClient = new HttpClientBuilder(environment).using(googleConfig.getHttpClient()).build(
 				"Google");
@@ -50,9 +54,12 @@ public class App extends Application<AppConfig> {
 		final AccountTokenDAO tokenDAO = new AccountTokenDAO(sessionFactory);
 
 		final GoogleCalendarService calendarService = new GoogleCalendarService(googleConfig, tokenDAO, googleClient);
+		OWMWeatherService weatherService = new OWMWeatherService(weatherConfig);
 
 		final GoogleCalendarResource calendarResource = new GoogleCalendarResource(calendarService);
+		WeatherResource weatherResource = new WeatherResource(weatherService);
 
 		environment.jersey().register(calendarResource);
+		environment.jersey().register(weatherResource);
 	}
 }

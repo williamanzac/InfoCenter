@@ -5,8 +5,6 @@ import io.dropwizard.hibernate.AbstractDAO;
 import java.io.Serializable;
 import java.util.List;
 
-import nz.co.fitnet.api.AccountToken;
-
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 

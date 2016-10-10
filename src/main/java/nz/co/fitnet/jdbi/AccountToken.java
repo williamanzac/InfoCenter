@@ -1,4 +1,4 @@
-package nz.co.fitnet.api;
+package nz.co.fitnet.jdbi;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

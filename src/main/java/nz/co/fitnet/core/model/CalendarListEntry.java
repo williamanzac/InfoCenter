@@ -1,4 +1,4 @@
-package nz.co.fitnet.api;
+package nz.co.fitnet.core.model;
 
 import java.util.List;
 

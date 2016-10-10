@@ -5,6 +5,9 @@ google:
     connectionTimeout: 5000ms
     timeout: 10000ms
 
+weather:
+  apiKey: 8874ec7791260647a31c5955bb18cc49
+
 database:
   url: jdbc:h2:./target/app
   driverClass: org.h2.Driver

@@ -5,8 +5,13 @@ import static org.glassfish.jersey.client.JerseyClientBuilder.createClient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.client.Entity;
@@ -14,11 +19,11 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import nz.co.fitnet.api.AccountToken;
-import nz.co.fitnet.api.Calendar;
-import nz.co.fitnet.api.CalendarList;
-import nz.co.fitnet.api.CalendarListEntry;
-import nz.co.fitnet.api.Events;
+import nz.co.fitnet.core.model.Calendar;
+import nz.co.fitnet.core.model.CalendarList;
+import nz.co.fitnet.core.model.CalendarListEntry;
+import nz.co.fitnet.core.model.Events;
+import nz.co.fitnet.jdbi.AccountToken;
 import nz.co.fitnet.jdbi.AccountTokenDAO;
 
 import org.apache.commons.io.IOUtils;
@@ -106,7 +111,7 @@ public class GoogleCalendarService {
 	}
 
 	private <T> T get(final long tokenId, final String url, final Class<T> responseClass)
-			throws GoogleCalendarServiceException {
+			throws ServiceException {
 		final AccountToken accountToken = tokenDAO.get(tokenId);
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Authorization", "Bearer " + accountToken.getAccessToken());
@@ -130,25 +135,40 @@ public class GoogleCalendarService {
 			final T result = mapper.readValue(string, responseClass);
 			return result;
 		} catch (final IOException e) {
-			throw new GoogleCalendarServiceException(e);
+			throw new ServiceException(e);
 		}
 	}
 
-	public CalendarList getCalendarList(final long tokenId) throws GoogleCalendarServiceException {
+	public CalendarList getCalendarList(final long tokenId) throws ServiceException {
 		return get(tokenId, "https://www.googleapis.com/calendar/v3/users/me/calendarList", CalendarList.class);
 	}
 
 	public CalendarListEntry getCalendarListEntry(final long tokenId, final String calendarId)
-			throws GoogleCalendarServiceException {
+			throws ServiceException {
 		return get(tokenId, "https://www.googleapis.com/calendar/v3/users/me/calendarList/" + calendarId,
 				CalendarListEntry.class);
 	}
 
-	public Calendar getCalendar(final long tokenId, final String calendarId) throws GoogleCalendarServiceException {
+	public Calendar getCalendar(final long tokenId, final String calendarId) throws ServiceException {
 		return get(tokenId, "https://www.googleapis.com/calendar/v3/calendars/" + calendarId, Calendar.class);
 	}
 
-	public Events getEvents(final long tokenId, final String calendarId) throws GoogleCalendarServiceException {
-		return get(tokenId, "https://www.googleapis.com/calendar/v3/calendars/" + calendarId + "/events", Events.class);
+	public Events getEvents(final long tokenId, final String calendarId, String start, String end)
+			throws ServiceException {
+		final SimpleDateFormat inFormat = new SimpleDateFormat("yyyy-MM-dd");
+		final SimpleDateFormat outFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		try {
+			final Date timeMin = inFormat.parse(start);
+			final Date timeMax = inFormat.parse(end);
+			final String formatMin = outFormat.format(timeMin);
+			final String formatMax = outFormat.format(timeMax);
+			final String paramMin = URLEncoder.encode(formatMin, "UTF-8");
+			final String paramMax = URLEncoder.encode(formatMax, "UTF-8");
+
+			return get(tokenId, "https://www.googleapis.com/calendar/v3/calendars/" + calendarId + "/events?timeMin="
+					+ paramMin + "&timeMax=" + paramMax, Events.class);
+		} catch (ParseException | UnsupportedEncodingException e) {
+			throw new ServiceException(e);
+		}
 	}
 }
